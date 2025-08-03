@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import ReadTask from './ReadTask';
+import { useNavigate } from 'react-router-dom';
 import * as jwtDecode from 'jwt-decode'; // Important: use * import
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [username, setUsername] = useState('');
+          const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -50,8 +52,8 @@ function App() {
     <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <p style={{ fontSize: '1.2rem' }}>Hi, <strong>{username}</strong></p>
-        <button
-          onClick={() => window.location.href = '/logout'}
+         <button
+          onClick={() => navigate('/logout')} // ✅ THIS IS CORRECT NOW
           style={{
             background: 'red',
             color: 'white',
