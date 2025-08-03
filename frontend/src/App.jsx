@@ -7,19 +7,44 @@ import ReadTask from './ReadTask';
 function App() {
   const [tasks, setTasks] = useState([]);
 
-  useEffect(() => {
-    fetch('http://localhost:8080/tasks')
-      .then(res => res.json())
-      .then(data => setTasks(data))
-      .catch(err => console.error("Failed to fetch tasks:", err));
-  }, []);
+useEffect(() => {
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem('token'); // get JWT from localStorage
+
+      const res = await fetch('http://localhost:8080/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error('Unauthorized or error fetching tasks');
+      }
+
+      const data = await res.json();
+      setTasks(data);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    }
+  };
+
+  fetchTasks();
+}, []);
 
   return (
+    
     <div style={{
       maxWidth: '900px',
       margin: '2rem auto',
       padding: '0 1rem',
     }}>
+      <button
+  onClick={() => window.location.href = '/logout'}
+  style={{ background: 'red', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+>
+  Logout
+</button>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',

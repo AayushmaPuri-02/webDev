@@ -3,6 +3,12 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const Task = require("./models/task");
 const ExpressError = require("./utils/ExpressError");
+const User = require('./models/user'); // adjust path if needed
+const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+require('dotenv').config();
+const JWT_SECRET = process.env.JWT_SECRET;
+const authenticateToken = require('./middleware/authenticateToken');
 
 const app = express();
 app.use(cors());
@@ -19,35 +25,98 @@ app.get('/', (req, res) => {
   res.send("This is home page");
 });
 
-app.get("/tasks", async (req, res) => {
+// Get all tasks – only for logged-in users
+app.get("/tasks", authenticateToken, async (req, res) => {
   const allTasks = await Task.find({});
   res.json(allTasks);
 });
 
-app.get("/tasks/:id", async (req, res) => {
+// Get single task – protected
+app.get("/tasks/:id", authenticateToken, async (req, res) => {
   const task = await Task.findById(req.params.id);
   res.json(task);
 });
 
-app.get("/tasks/:id/edit", async (req, res) => {
+// Get task for editing – protected
+app.get("/tasks/:id/edit", authenticateToken, async (req, res) => {
   const task = await Task.findById(req.params.id);
   res.json(task);
 });
 
-app.post("/tasks", async (req, res) => {
+// Create a task – protected
+app.post("/tasks", authenticateToken, async (req, res) => {
   const newTask = new Task(req.body);
   const saved = await newTask.save();
   res.status(201).json(saved);
 });
 
-app.put("/tasks/:id", async (req, res) => {
+// Update a task – protected
+app.put("/tasks/:id", authenticateToken, async (req, res) => {
   const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.json(updatedTask);
 });
 
-app.delete("/tasks/:id", async (req, res) => {
+// Delete a task – protected
+app.delete("/tasks/:id", authenticateToken, async (req, res) => {
   const deletedTask = await Task.findByIdAndDelete(req.params.id);
   res.json({ message: "Task deleted", deletedTask });
+});
+// Register route
+app.post('/register', async (req, res, next) => {
+  try {
+   const { username, email, password } = req.body;
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  return res.status(400).json({ error: 'Invalid email format' });
+}
+    // Basic validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Username or email already taken' });
+    }
+
+    // Create new user
+    const newUser = new User({ username, email, password });
+    await newUser.save();
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+
+// Login route
+// Login route
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // 1. Find the user by username
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // 2. Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // 3. Create JWT
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+    // 4. Send it
+    res.json({ message: 'Login successful', token });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Optional: comment this out if you're debugging
