@@ -16,7 +16,7 @@ function Login() {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:8080/login', form);
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, form);
       const token = res.data.token;
       localStorage.setItem('token', token); // ✅ Save JWT to localStorage
       setMessage('Login successful');

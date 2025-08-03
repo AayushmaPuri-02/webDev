@@ -8,7 +8,7 @@ const handleDelete = async () => {
   try {
     const token = localStorage.getItem('token');
 
-    const res = await fetch(`http://localhost:8080/tasks/${task._id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${task._id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -24,7 +24,6 @@ const handleDelete = async () => {
     console.error("Failed to delete task:", err);
   }
 };
-
   return (
     <tr className="border-b">
       {/* Title */}

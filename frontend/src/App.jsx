@@ -22,7 +22,7 @@ function App() {
         const decoded = jwtDecode.jwtDecode(token);
         setUsername(decoded.username); // <== this must match backend token field
 
-        const res = await fetch('http://localhost:8080/tasks', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

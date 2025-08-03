@@ -12,7 +12,7 @@ function Register() {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:8080/register', form);
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/register`, form);
 
       // ✅ Save token and redirect
       localStorage.setItem('token', res.data.token);

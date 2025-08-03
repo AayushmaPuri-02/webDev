@@ -6,49 +6,55 @@ function EditTask() {
   const navigate = useNavigate();
   const [task, setTask] = useState({ title: '', description: '', dueDate: '' });
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch(`http://localhost:8080/tasks/${id}/edit`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
+useEffect(() => {
+  const token = localStorage.getItem('token');
+
+  fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    }
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Failed to fetch task');
       }
+      return res.json();
     })
-      .then(res => res.json())
-      .then(data => {
-        const formattedDate = data.dueDate
-          ? new Date(data.dueDate).toISOString().split('T')[0]
-          : '';
-        setTask({ ...data, dueDate: formattedDate });
-      })
-      .catch(err => console.error("Error loading task:", err));
-  }, [id]);
+    .then(data => {
+      const formattedDate = data.dueDate
+        ? new Date(data.dueDate).toISOString().split('T')[0]
+        : '';
+      setTask({ ...data, dueDate: formattedDate });
+    })
+    .catch(err => console.error("Error loading task:", err));
+}, [id]);
 
   const handleChange = (e) => {
     setTask({ ...task, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:8080/tasks/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // 🔐 TOKEN ADDED HERE
-        },
-        body: JSON.stringify(task),
-      });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(task),
+    });
 
-      if (res.ok) {
-        navigate(`/tasks/${id}`);
-      } else {
-        throw new Error("Failed to update");
-      }
-    } catch (err) {
-      console.error("Update failed:", err);
+    if (res.ok) {
+      navigate(`/tasks/${id}`);
+    } else {
+      throw new Error("Failed to update");
     }
-  };
+  } catch (err) {
+    console.error("Update failed:", err);
+  }
+};
 
   return (
     <div style={{

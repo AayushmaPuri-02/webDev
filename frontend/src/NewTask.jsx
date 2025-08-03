@@ -14,14 +14,14 @@ const handleSubmit = async (e) => {
   try {
     const token = localStorage.getItem('token'); // ⬅️ GET token
 
-    const res = await fetch('http://localhost:8080/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // ⬅️ ATTACH token here
-      },
-      body: JSON.stringify(newTask),
-    });
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify(newTask),
+});
 
     if (res.ok) {
       navigate('/');

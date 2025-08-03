@@ -7,56 +7,61 @@ function ShowTask() {
   const [task, setTask] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-useEffect(() => {
-  const token = localStorage.getItem('token');
-  fetch(`http://localhost:8080/tasks/${id}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  })
-    .then(res => res.json())
-    .then(data => setTask(data))
-    .catch(err => console.error("Error fetching task:", err));
-}, [id]);
-
-const toggleCompleted = async () => {
-  try {
+  useEffect(() => {
     const token = localStorage.getItem('token');
-    const updated = { ...task, completed: !task.completed };
-    const res = await fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(updated),
-    });
-    const data = await res.json();
-    setTask(data);
-  } catch (err) {
-    console.error("Error updating task:", err);
-  }
-};
-
-const confirmDelete = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:8080/tasks/${id}`, {
-      method: 'DELETE',
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
-    });
-    if (res.ok) {
-      setShowConfirm(false);
-      navigate('/');
-    } else {
-      throw new Error("Delete failed");
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch task");
+        return res.json();
+      })
+      .then(data => setTask(data))
+      .catch(err => console.error("Error fetching task:", err));
+  }, [id]);
+
+  const toggleCompleted = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const updated = { ...task, completed: !task.completed };
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updated),
+      });
+
+      if (!res.ok) throw new Error("Failed to update task");
+      const data = await res.json();
+      setTask(data);
+    } catch (err) {
+      console.error("Error updating task:", err);
     }
-  } catch (err) {
-    console.error("Delete error:", err);
-  }
-};
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setShowConfirm(false);
+        navigate('/');
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
 
   if (!task) return <h2 className="p-8 text-lg">Loading...</h2>;
 
