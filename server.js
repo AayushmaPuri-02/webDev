@@ -15,10 +15,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const MONGO_URL = 'mongodb://127.0.0.1:27017/taskTracker';
+const dbUrl = process.env.ATLASDB_URL ;
 main().then(() => console.log('Connected to DB')).catch(console.error);
 async function main() {
-  await mongoose.connect(MONGO_URL);
+await mongoose.connect(dbUrl);
 }
 
 app.get('/', (req, res) => {
