@@ -11,7 +11,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const authenticateToken = require('./middleware/authenticateToken');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://tasktracker-frontend-8iqd.onrender.com',
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
