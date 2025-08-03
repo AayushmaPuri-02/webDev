@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 function EditTask() {
@@ -8,7 +7,12 @@ function EditTask() {
   const [task, setTask] = useState({ title: '', description: '', dueDate: '' });
 
   useEffect(() => {
-    fetch(`http://localhost:8080/tasks/${id}/edit`)
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:8080/tasks/${id}/edit`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    })
       .then(res => res.json())
       .then(data => {
         const formattedDate = data.dueDate
@@ -26,11 +30,16 @@ function EditTask() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:8080/tasks/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // 🔐 TOKEN ADDED HERE
+        },
         body: JSON.stringify(task),
       });
+
       if (res.ok) {
         navigate(`/tasks/${id}`);
       } else {
@@ -98,11 +107,11 @@ function EditTask() {
           Save Changes
         </button>
         <button
-  onClick={() => navigate('/')}
-  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mt-4"
->
-  ← Back
-</button>
+          onClick={() => navigate('/')}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mt-4"
+        >
+          ← Back
+        </button>
       </form>
     </div>
   );

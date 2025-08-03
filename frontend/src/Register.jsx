@@ -9,24 +9,19 @@ function Register() {
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-const handleSubmit = async e => {
-  e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:8080/register', form);
 
-  // Email format validation
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(form.email)) {
-    setMessage('Please enter a valid email address');
-    return;
-  }
+      // ✅ Save token and redirect
+      localStorage.setItem('token', res.data.token);
+      window.location.href = '/'; // redirect to task list
 
-  try {
-    const res = await axios.post('http://localhost:8080/register', form);
-    setMessage(res.data.message);
-    window.location.href = '/'; // ✅ Redirect after successful registration
-  } catch (err) {
-    setMessage(err.response?.data?.error || 'Something went wrong');
-  }
-};
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Something went wrong');
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -63,7 +58,7 @@ const handleSubmit = async e => {
   );
 }
 
-// Reusing same styling from Login page
+// Styling preserved from before
 const formStyle = {
   maxWidth: '400px',
   margin: '100px auto',

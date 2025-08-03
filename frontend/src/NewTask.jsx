@@ -7,26 +7,31 @@ function NewTask() {
   const [dueDate, setDueDate] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newTask = { title, description, dueDate };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const newTask = { title, description, dueDate };
 
-    try {
-      const res = await fetch('http://localhost:8080/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
-      });
+  try {
+    const token = localStorage.getItem('token'); // ⬅️ GET token
 
-      if (res.ok) {
-        navigate('/');
-      } else {
-        console.error("Failed to create task");
-      }
-    } catch (err) {
-      console.error("Error:", err);
+    const res = await fetch('http://localhost:8080/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // ⬅️ ATTACH token here
+      },
+      body: JSON.stringify(newTask),
+    });
+
+    if (res.ok) {
+      navigate('/');
+    } else {
+      console.error("Failed to create task");
     }
-  };
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">

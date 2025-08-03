@@ -4,23 +4,26 @@ import { Link, useNavigate } from 'react-router-dom';
 function ReadTask({ task }) {
   const navigate = useNavigate();
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm("Are you sure you want to delete this task?");
-    if (!confirmed) return;
+const handleDelete = async () => {
+  try {
+    const token = localStorage.getItem('token');
 
-    try {
-      const res = await fetch(`http://localhost:8080/tasks/${task._id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        window.location.reload(); // Refresh the list after deletion
-      } else {
-        console.error("Failed to delete task");
+    const res = await fetch(`http://localhost:8080/tasks/${task._id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    } catch (err) {
-      console.error("Delete error:", err);
+    });
+
+    if (!res.ok) {
+      throw new Error("Delete failed");
     }
-  };
+
+    window.location.reload(); // Or call a prop to refresh task list
+  } catch (err) {
+    console.error("Failed to delete task:", err);
+  }
+};
 
   return (
     <tr className="border-b">

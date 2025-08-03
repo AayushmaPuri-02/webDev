@@ -2,49 +2,69 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import ReadTask from './ReadTask';
-
+import * as jwtDecode from 'jwt-decode'; // Important: use * import
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [username, setUsername] = useState('');
 
-useEffect(() => {
-  const fetchTasks = async () => {
-    try {
-      const token = localStorage.getItem('token'); // get JWT from localStorage
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const token = localStorage.getItem('token');
 
-      const res = await fetch('http://localhost:8080/tasks', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error('Unauthorized or error fetching tasks');
+      if (!token) {
+        window.location.href = '/login';
+        return;
       }
 
-      const data = await res.json();
-      setTasks(data);
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err);
-    }
-  };
+      try {
+        // decode token and extract username
+        const decoded = jwtDecode.jwtDecode(token);
+        setUsername(decoded.username); // <== this must match backend token field
 
-  fetchTasks();
-}, []);
+        const res = await fetch('http://localhost:8080/tasks', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+          }
+          throw new Error('Unauthorized or error fetching tasks');
+        }
+
+        const data = await res.json();
+        setTasks(data);
+      } catch (err) {
+        console.error("Failed to fetch tasks:", err);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   return (
-    
-    <div style={{
-      maxWidth: '900px',
-      margin: '2rem auto',
-      padding: '0 1rem',
-    }}>
-      <button
-  onClick={() => window.location.href = '/logout'}
-  style={{ background: 'red', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
->
-  Logout
-</button>
+    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <p style={{ fontSize: '1.2rem' }}>Hi, <strong>{username}</strong></p>
+        <button
+          onClick={() => window.location.href = '/logout'}
+          style={{
+            background: 'red',
+            color: 'white',
+            padding: '0.5rem 1rem',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
